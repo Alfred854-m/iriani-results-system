@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Iriani Secondary - Results System</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
+body{background:#f4f7fb}
+.header{background:#0a3d62;color:white;padding:15px 20px;display:flex;justify-content:space-between;align-items:center}
+.header h2 span{color:#f6b93b}
+.login-box{max-width:380px;margin:80px auto;background:white;padding:30px;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.1)}
+.login-box h2{text-align:center;color:#0a3d62;margin-bottom:20px}
+input,select{width:100%;padding:12px;margin:8px 0;border:1px solid #ddd;border-radius:8px}
+button{width:100%;padding:12px;background:#0a3d62;color:white;border:none;border-radius:8px;font-weight:bold;cursor:pointer;margin-top:10px}
+button:hover{background:#1e6fa5}
+.dashboard{display:none;padding:20px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:15px;margin:20px 0}
+.card{background:white;padding:20px;border-radius:12px;box-shadow:0 5px 15px rgba(0,0,0,.05);border-left:5px solid #0a3d62}
+.card h3{color:#0a3d62}
+.main{display:grid;grid-template-columns:1fr 1.5fr;gap:20px}
+.panel{background:white;padding:20px;border-radius:12px;box-shadow:0 5px 15px rgba(0,0,0,.05)}
+table{width:100%;border-collapse:collapse;margin-top:15px}
+th,td{padding:10px;text-align:left;border-bottom:1px solid #eee;font-size:14px}
+th{background:#0a3d62;color:white}
+.grade-A{color:green;font-weight:bold}.grade-B{color:#0a3d62;font-weight:bold}.grade-C{color:orange;font-weight:bold}.grade-D{color:red;font-weight:bold}
+@media(max-width:800px){.main{grid-template-columns:1fr}}
+.hide{display:none}
+</style>
+</head>
+<body>
+<div class="header"><h2>🏫 IRIANI <span>Secondary</span> | Results System</h2><div id="logoutBtn" class="hide"><button onclick="logout()" style="width:auto;padding:6px 15px;background:#c0392b">Logout</button></div></div>
+
+<div id="loginPage" class="login-box">
+<h2>Teacher Login</h2>
+<input id="username" placeholder="Username (teacher)">
+<input id="password" type="password" placeholder="Password (1234)">
+<button onclick="login()">Login</button>
+<p style="margin-top:15px;font-size:13px;text-align:center;color:#777">Demo: username: teacher / password: 1234</p>
+</div>
+
+<div id="dashboard" class="dashboard">
+<div class="cards">
+<div class="card"><h3 id="totalStudents">0</h3><p>Total Students</p></div>
+<div class="card" style="border-left-color:#f6b93b"><h3 id="avgMean">0</h3><p>Class Mean Score</p></div>
+<div class="card" style="border-left-color:#27ae60"><h3>Form 1-4</h3><p>All Classes</p></div>
+</div>
+
+<div class="main">
+<div class="panel">
+<h3>Add Student</h3>
+<input id="adm" placeholder="Adm No e.g 101">
+<input id="sname" placeholder="Student Name">
+<select id="formClass"><option>Form 1</option><option>Form 2</option><option>Form 3</option><option>Form 4</option></select>
+<button onclick="addStudent()">Add Student</button>
+<hr style="margin:20px 0">
+<h3>Enter Marks</h3>
+<select id="studentSelect"></select>
+<input id="maths" type="number" placeholder="Maths /100">
+<input id="eng" type="number" placeholder="English /100">
+<input id="kis" type="number" placeholder="Kiswahili /100">
+<input id="sci" type="number" placeholder="Science /100">
+<input id="sst" type="number" placeholder="SST /100">
+<button onclick="saveMarks()" style="background:#27ae60">Save Marks & Auto Grade</button>
+</div>
+
+<div class="panel">
+<h3>Class Results - Ranked <button onclick="window.print()" style="width:auto;float:right;padding:5px 10px;font-size:12px">Print Report</button></h3>
+<table>
+<thead><tr><th>Pos</th><th>Adm</th><th>Name</th><th>Total</th><th>Mean</th><th>Grade</th></tr></thead>
+<tbody id="resultsBody"></tbody>
+</table>
+</div>
+</div>
+</div>
+
+<script>
+let students = JSON.parse(localStorage.getItem('iriani_students')||'[]');
+function login(){
+if(document.getElementById('username').value=='teacher' && document.getElementById('password').value=='1234'){
+document.getElementById('loginPage').style.display='none';
+document.getElementById('dashboard').style.display='block';
+document.getElementById('logoutBtn').classList.remove('hide');
+render();
+}else{alert('Wrong! Use teacher / 1234')}
+}
+function logout(){location.reload()}
+function addStudent(){
+let adm=document.getElementById('adm').value, name=document.getElementById('sname').value, f=document.getElementById('formClass').value;
+if(!adm||!name){alert('Fill all');return}
+students.push({adm,name,form:f,total:0,mean:0,grade:'-'});
+localStorage.setItem('iriani_students',JSON.stringify(students));
+document.getElementById('adm').value='';document.getElementById('sname').value='';
+render();
+}
+function saveMarks(){
+let idx=document.getElementById('studentSelect').value;
+let m=+document.getElementById('maths').value||0, e=+document.getElementById('eng').value||0, k=+document.getElementById('kis').value||0, s=+document.getElementById('sci').value||0, ss=+document.getElementById('sst').value||0;
+let total=m+e+k+s+ss; let mean=Math.round(total/5);
+let grade=mean>=80?'A':mean>=60?'B':mean>=40?'C':'D';
+students[idx].total=total;students[idx].mean=mean;students[idx].grade=grade;students[idx].marks={m,e,k,s,ss};
+localStorage.setItem('iriani_students',JSON.stringify(students));
+render();
+alert(name+' Saved! Mean:'+mean+' Grade:'+grade);
+}
+function render(){
+let sel=document.getElementById('studentSelect');sel.innerHTML='';
+students.forEach((st,i)=>{sel.innerHTML+=`<option value="${i}">${st.adm} - ${st.name} (${st.form})</option>`});
+let sorted=[...students].sort((a,b)=>b.total-a.total);
+let body=document.getElementById('resultsBody');body.innerHTML='';
+let sum=0;
+sorted.forEach((st,i)=>{
+sum+=st.mean;
+let gClass=st.grade=='A'?'grade-A':st.grade=='B'?'grade-B':st.grade=='C'?'grade-C':'grade-D';
+body.innerHTML+=`<tr><td>${i+1}</td><td>${st.adm}</td><td>${st.name}</td><td>${st.total}</td><td>${st.mean}</td><td class="${gClass}">${st.grade}</td></tr>`;
+});
+document.getElementById('totalStudents').innerText=students.length;
+document.getElementById('avgMean').innerText=students.length?Math.round(sum/students.length):0;
+}
+</script>
+</body>
+</html>
