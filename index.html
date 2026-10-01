@@ -1,56 +1,78 @@
 <!DOCTYPE html>
-<html>
-<head><title>IRIANI Results V2</title>
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IRIANI Secondary - Results System</title>
 <style>
-*{box-sizing:border-box;font-family:Arial;margin:0;padding:0}
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial}
 body{background:#f1f5f9}
 header{background:#0f4561;color:#fff;padding:14px 20px;display:flex;justify-content:space-between}
-.card{background:#fff;border-radius:10px;padding:14px;margin:10px;box-shadow:0 2px 6px rgba(0,0,0,.06)}
+.card{background:#fff;border-radius:12px;padding:16px;margin:10px;box-shadow:0 2px 8px rgba(0,0,0,.07)}
 .top{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin:10px}
-.main{display:grid;grid-template-columns:340px 1fr;gap:10px;margin:10px}
-@media(max-width:800px){.main{grid-template-columns:1fr}}
-input,select{width:100%;padding:10px;margin:6px 0;border:1px solid #cbd5e1;border-radius:8px}
-button{width:100%;padding:11px;background:#0f4561;color:#fff;border:0;border-radius:8px;font-weight:700;cursor:pointer}
-.btn-sm{width:auto;padding:5px 10px;font-size:12px;border-radius:6px}
-.btn-red{background:#dc2626}
+.main{display:grid;grid-template-columns:360px 1fr;gap:10px;margin:10px}
+@media(max-width:900px){.main{grid-template-columns:1fr}}
+input,select{width:100%;padding:11px;margin:7px 0;border:1px solid #cbd5e1;border-radius:8px}
+button{width:100%;padding:12px;background:#0f4561;color:#fff;border:0;border-radius:8px;font-weight:700;cursor:pointer}
+.btn-sm{width:auto;padding:6px 12px;font-size:12px;border-radius:6px}
+.btn-red{background:#dc2626}.btn-orange{background:#f59e0b;color:#111}
 table{width:100%;border-collapse:collapse;font-size:13px}
-th{background:#0f4561;color:#fff;padding:8px;text-align:left}
-td{padding:7px;border-bottom:1px solid #e2e8f0}
+th{background:#0f4561;color:#fff;padding:9px;text-align:left}
+td{padding:8px;border-bottom:1px solid #e2e8f0}
+#loginScreen{position:fixed;inset:0;background:#0f4561;display:flex;align-items:center;justify-content:center;z-index:9999}
+.loginBox{background:#fff;padding:26px;border-radius:14px;width:90%;max-width:380px}
 </style></head>
 <body>
-<div id="login" style="position:fixed;inset:0;background:#0f4561;display:flex;align-items:center;justify-content:center;z-index:99">
-<div style="background:#fff;padding:24px;border-radius:12px;width:90%;max-width:360px">
-<h2 style="text-align:center;color:#0f4561">🏫 IRIANI Secondary<br><small>Results System</small></h2>
-<input id="u" value="teacher" placeholder="teacher">
-<input id="p" type="password" value="1234" placeholder="1234">
-<button onclick="if(u.value=='teacher'&&p.value=='1234'){localStorage.setItem('iriani_log','yes');login.style.display='none'}else alert('Use teacher / 1234')" style="margin-top:8px">Login</button>
-</div></div>
-<header><h1>🏫 IRIANI Secondary | Results</h1><button class="btn-sm btn-red" onclick="localStorage.removeItem('iriani_log');location.reload()">Logout</button></header>
-<div class="top"><div class="card"><b id="tot">0</b><div>Total Students</div></div><div class="card"><b id="mean">0</b><div>Class Mean</div></div><div class="card"><b>Form 1-4</b><div>All Classes</div></div></div>
-<div class="main">
-<div>
-<div class="card"><div style="display:flex;justify-content:space-between;align-items:center"><h3>Add Student</h3><button class="btn-sm btn-red" onclick="clearAll()">Clear All</button></div>
-<input id="adm" placeholder="Adm No e.g 101"><input id="name" placeholder="Student Name"><select id="form"><option>Form 1</option><option>Form 2</option><option>Form 3</option><option>Form 4</option></select><button onclick="addStudent()">Add Student</button></div>
-<div class="card"><h3>Enter Marks</h3><select id="stuSel"><option value="">-- Select Student --</option></select>
-<input id="m1" type="number" placeholder="Maths"><input id="m2" type="number" placeholder="English"><input id="m3" type="number" placeholder="Kiswahili"><input id="m4" type="number" placeholder="Science"><input id="m5" type="number" placeholder="SST">
-<button onclick="saveMarks()" style="background:#f59e0b;color:#000">Save Marks & Auto Grade</button></div>
-</div>
-<div class="card"><div style="display:flex;justify-content:space-between"><h3>Class Results - Ranked</h3><button class="btn-sm" onclick="window.print()">Print Report</button></div>
-<table><thead><tr><th>Pos</th><th>Adm</th><th>Name</th><th>Total</th><th>Mean</th><th>Grade</th><th>Action</th></tr></thead><tbody id="tbody"></tbody></table>
-<div id="empty" style="text-align:center;padding:20px;color:#64748b">No students yet. Add on left.</div></div>
-</div>
+<div id="loginScreen"><div class="loginBox">
+<h2 style="text-align:center;color:#0f4561">🏫 IRIANI SECONDARY<br><small>Results System</small></h2>
+<input id="user" value="teacher"><input id="pass" type="password" value="1234">
+<button onclick="login()" style="margin-top:10px">Login</button></div></div>
+<header><h1>🏫 IRIANI Secondary | Results System</h1><button class="btn-sm btn-red" onclick="localStorage.removeItem('iriani_logged');location.reload()">Logout</button></header>
+<div class="top"><div class="card"><b id="count" style="font-size:22px">0</b><div>Total Students</div></div><div class="card"><b id="meanAvg" style="font-size:22px">0</b><div>Class Mean</div></div><div class="card"><b>Form 1-4</b><div>Academic 2025</div></div></div>
+<div class="main"><div>
+<div class="card"><div style="display:flex;justify-content:space-between"><h3>Add Student</h3><button class="btn-sm btn-red" onclick="clearAllData()">Clear All</button></div>
+<input id="admNo" placeholder="Adm No e.g 101"><input id="studName" placeholder="Student Name"><select id="formClass"><option>Form 1</option><option>Form 2</option><option>Form 3</option><option>Form 4</option></select>
+<button onclick="addNewStudent()">Add Student</button></div>
+<div class="card"><h3>Enter Marks</h3><select id="studentList"><option value="">-- Select Student --</option></select>
+<input id="math" type="number" placeholder="Maths"><input id="eng" type="number" placeholder="English"><input id="kis" type="number" placeholder="Kiswahili"><input id="sci" type="number" placeholder="Science"><input id="sst" type="number" placeholder="SST">
+<button class="btn-orange" onclick="saveStudentMarks()">Save Marks & Auto Grade</button></div></div>
+<div class="card"><div style="display:flex;justify-content:space-between"><h3>Class Results - Ranked</h3><button class="btn-sm" onclick="window.print()">Print</button></div>
+<table><thead><tr><th>Pos</th><th>Adm</th><th>Name</th><th>Form</th><th>Total</th><th>Mean</th><th>Grade</th><th>Action</th></tr></thead><tbody id="tableBody"></tbody></table>
+<div id="noData" style="text-align:center;padding:18px;color:#64748b">No students yet. Add on left.</div></div></div>
 <script>
-let students=JSON.parse(localStorage.getItem('iriani_v2')||'[]');
-function save(){localStorage.setItem('iriani_v2',JSON.stringify(students));render()}
-function grade(m){if(m>=80)return'A';if(m>=70)return'B';if(m>=60)return'C';if(m>=50)return'D';return'E'}
-function addStudent(){let a=adm.value.trim(),n=name.value.trim(),f=form.value;if(!a||!n)return alert('Enter Adm & Name');if(students.find(s=>s.adm==a))return alert('Adm exists');students.push({adm:a,name:n.toUpperCase(),form:f,total:0,mean:0,grade:'-'});adm.value='';name.value='';save()}
-function saveMarks(){let id=stuSel.value;if(!id)return alert('Select student');let s=students.find(x=>x.adm==id);let ms=[+m1.value||0,+m2.value||0,+m3.value||0,+m4.value||0,+m5.value||0];let t=ms.reduce((a,b)=>a+b,0);let me=Math.round(t/5);s.total=t;s.mean=me;s.grade=grade(me);save();alert(s.name+' saved: '+t+' Mean '+me+' Grade '+s.grade)}
-function deleteOne(a){if(!confirm('Delete Adm '+a+'?'))return;students=students.filter(s=>s.adm!=a);save()}
-function clearAll(){if(!students.length)return alert('No students');if(!confirm('Delete ALL '+students.length+' students?'))return;students=[];localStorage.removeItem('iriani_v2');save()}
-function render(){tbody.innerHTML='';let sorted=[...students].sort((a,b)=>b.total-a.total);let sum=0;sorted.forEach((s,i)=>{sum+=s.mean||0;tbody.innerHTML+=`<tr><td>${i+1}</td><td>${s.adm}</td><td>${s.name}</td><td>${s.total}</td><td>${s.mean}</td><td><b>${s.grade}</b></td><td><button class="btn-sm btn-red" onclick="deleteOne('${s.adm}')">Delete</button></td></tr>`});tot.innerText=students.length;mean.innerText=students.length?Math.round(sum/students.length):0;stuSel.innerHTML='<option value="">-- Select Student --</option>'+students.map(s=>`<option value="${s.adm}">${s.adm} - ${s.name}</option>`).join('');empty.style.display=students.length?'none':'block'}
-if(localStorage.getItem('iriani_log')=='yes')login.style.display='none';
-render();
+let allStudents=JSON.parse(localStorage.getItem('iriani_final_v3')||'[]');
+function saveToStorage(){localStorage.setItem('iriani_final_v3',JSON.stringify(allStudents));drawTable()}
+function getGrade(avg){if(avg>=80)return'A';if(avg>=70)return'B';if(avg>=60)return'C';if(avg>=50)return'D';return'E'}
+function addNewStudent(){
+  const adm=document.getElementById('admNo').value.trim();
+  const name=document.getElementById('studName').value.trim();
+  const form=document.getElementById('formClass').value;
+  if(!adm||!name){alert('Enter Adm No and Name');return}
+  if(allStudents.find(s=>s.adm===adm)){alert('Adm No '+adm+' exists!');return}
+  allStudents.push({adm:adm,name:name.toUpperCase(),form:form,total:0,mean:0,grade:'-'});
+  document.getElementById('admNo').value='';document.getElementById('studName').value='';
+  saveToStorage();alert('Added '+name+'!');
+}
+function saveStudentMarks(){
+  const adm=document.getElementById('studentList').value;
+  if(!adm){alert('Select student');return}
+  const st=allStudents.find(s=>s.adm===adm);
+  const m1=parseInt(math.value)||0,m2=parseInt(eng.value)||0,m3=parseInt(kis.value)||0,m4=parseInt(sci.value)||0,m5=parseInt(sst.value)||0;
+  const total=m1+m2+m3+m4+m5;const mean=Math.round(total/5);
+  st.total=total;st.mean=mean;st.grade=getGrade(mean);saveToStorage();
+  alert(st.name+' saved: Total '+total+' Mean '+mean+' Grade '+st.grade);
+}
+function deleteStudent(adm){if(!confirm('Delete Adm '+adm+'?'))return;allStudents=allStudents.filter(s=>s.adm!==adm);saveToStorage()}
+function clearAllData(){if(allStudents.length===0){alert('No students');return}if(!confirm('Delete ALL '+allStudents.length+' students?'))return;allStudents=[];localStorage.removeItem('iriani_final_v3');drawTable()}
+function drawTable(){
+  tableBody.innerHTML='';const sorted=[...allStudents].sort((a,b)=>b.total-a.total);let sum=0;
+  sorted.forEach((s,i)=>{sum+=s.mean||0;tableBody.innerHTML+=`<tr><td>${i+1}</td><td>${s.adm}</td><td>${s.name}</td><td>${s.form}</td><td>${s.total}</td><td>${s.mean}</td><td><b>${s.grade}</b></td><td><button class="btn-sm btn-red" onclick="deleteStudent('${s.adm}')">Delete</button></td></tr>`});
+  count.innerText=allStudents.length;meanAvg.innerText=allStudents.length?Math.round(sum/allStudents.length):0;
+  studentList.innerHTML='<option value="">-- Select Student --</option>'+allStudents.map(s=>`<option value="${s.adm}">${s.adm} - ${s.name}</option>`).join('');
+  noData.style.display=allStudents.length?'none':'block';
+}
+function login(){if(user.value==='teacher'&&pass.value==='1234'){localStorage.setItem('iriani_logged','yes');loginScreen.style.display='none'}else alert('Use teacher / 1234')}
+if(localStorage.getItem('iriani_logged')==='yes')loginScreen.style.display='none';
+drawTable();
 </script>
 </body>
 </html>
